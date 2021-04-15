@@ -1,0 +1,43 @@
+version: '3.5'
+
+services:
+  mariadb:
+    image: mariadb
+    container_name: mariadb
+    environment:
+      MYSQL_ROOT_PASSWORD: secret
+    ports:
+        - "3306:3306"
+    volumes:
+      - ./mysql-dump/dump.sql:/docker-entrypoint-initdb.d/dump.sql
+    restart: always
+    networks:
+      - webnetwork
+  web:
+    build: .
+    container_name: web
+    networks:
+      - webnetwork
+    volumes:
+      - ./www-docs:/var/www/html
+    ports:
+      - "80:80"
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    environment:
+     PMA_PORT: 3306
+     PMA_HOST: mariadb
+     PMA_USER: root
+     PMA_PASSWORD: secret
+    ports:
+        - "8000:80"
+    restart: always
+    depends_on:
+        - mariadb
+    networks:
+         - webnetwork
+     
+
+networks:
+    webnetwork:
+        driver: bridge
